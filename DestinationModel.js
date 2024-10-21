@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const DestinationSchema = new mongoose.Schema({
+const DestinationModel = new mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -40,4 +40,4 @@ const DestinationSchema = new mongoose.Schema({
 }, 
 { timestamps: true, strict: true });
 
-module.exports = mongoose.model('Destination', DestinationSchema, 'destinations');
+module.exports = mongoose.model('Destination', DestinationModel, 'destinations');
