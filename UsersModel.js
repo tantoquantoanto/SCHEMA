@@ -1,0 +1,46 @@
+const mongoose = require("mongoose");
+
+const UserSchema = new mongoose.Schema(
+  {
+    name: {
+        type: String, 
+        required:true
+    },
+
+    surname: {
+        type: String, 
+        required: true
+    },
+
+
+    username: {
+      type: String,
+      required: true,
+      unique: true, 
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true, 
+    },
+    password: {
+      type: String,
+      required: true, 
+      minLegth: 8,
+    },
+    reviews: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Review', 
+      }
+    ],
+    role: {
+      type: String,
+      enum: ['user', 'admin'], 
+      default: 'user',
+    },
+  },
+  { timestamps: true, strict: true }
+);
+
+module.exports = mongoose.model('User', UserSchema, 'users');
