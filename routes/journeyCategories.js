@@ -1,27 +1,36 @@
 const express = require("express");
-const CategoryModel = require("./CategoryModel");
+const CategoryModel = require("../CategoryModel");
 const categories = express.Router();
 
 
-categories.get("./categories", async (req,res) => {
+categories.get("./categories", async (req,res, next) => {
+    const {page = 1, pageSize = 4} = req.query; 
+    
 
     try {
-        const categories = await CategoryModel.find();
+        const totalCategories = await CategoryModel.countDocuments();
+        const totalPages = Math.ceil(totalCategories/pageSize);
+
+        const categories = await CategoryModel.find()
+        .limit(pageSize)
+        .skip((page-1) * pageSize);
+
         if(categories.length === 0) {
             res.status(404).send({statusCode:404, message:"No categories found"})
         }
-        res.status(200).send({statusCode: 200, message:`${categories.length} categories found`}, categories)
+        res.status(200).send({statusCode: 200, message:`${categories.length} categories found`}, 
+            totalCategories = totalCategories,
+            totalPages= totalPages,
+            categories)
 
         
     } catch (error) {
-        res.status(500).send({
-            message: error.message,
-          });
+       next(error)
     }
 })
 
 
-categories.get("./categories/byId/:categoryId", async(req,res) => {
+categories.get("./categories/byId/:categoryId", async(req,res, next) => {
     const {categoryId} = req.params;
     try {
         const category = await CategoryModel.findById(categoryId);
@@ -32,14 +41,12 @@ categories.get("./categories/byId/:categoryId", async(req,res) => {
         res.status(200).send({statusCode:200, message:"Category found successfully", category})
 
     } catch (error) {
-        res.status(500).send({
-            message: error.message,
-          });
+        next(error)
     }
 })
 
 
-categories.post("./categories/create", async(req,res) => {
+categories.post("./categories/create", async(req,res, next) => {
 
    
     try {
@@ -47,7 +54,7 @@ categories.post("./categories/create", async(req,res) => {
         const newCategory = new CategoryModel({
             name: name,
             description: description,
-            images: images;
+            images: images
 
         })
         
@@ -56,12 +63,12 @@ categories.post("./categories/create", async(req,res) => {
 
 
     } catch (error) {
-        res.status(500).send({ message: "Errore nella creazione della categoria", error: error.message });
+        next(error)
     }
 })
 
 
-categories.patch("./categories/update/:categoryId", async (req,res) => {
+categories.patch("./categories/update/:categoryId", async (req,res, next) => {
     const {categoryId} = req.params;
     try {
         const updatedData = req.body;
@@ -77,15 +84,12 @@ categories.patch("./categories/update/:categoryId", async (req,res) => {
 
         
     } catch (error) {
-        res.status(500).send({
-            statusCode: 500,
-            message: error.message,
-          });
+        next(error)
     }
 })
 
 
-categories.delete(":/categories/delete/:categoryId", async (req,res) => {
+categories.delete(":/categories/delete/:categoryId", async (req,res, next) => {
     const {categoryId} = req.params;
 
     try {
@@ -95,10 +99,9 @@ categories.delete(":/categories/delete/:categoryId", async (req,res) => {
 
 
     } catch (error) {
-        res.status(500).send({
-            statusCode: 500,
-            message: error.message,
-          });
+       next(error)
         
     }
 })
+
+module.exports = categories;

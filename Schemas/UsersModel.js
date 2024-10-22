@@ -28,6 +28,12 @@ const UserSchema = new mongoose.Schema(
       required: true, 
       minLegth: 8,
     },
+
+    isActive: {
+      type: Boolean,
+      required: false
+
+    },
     reviews: [
       {
         type: mongoose.Schema.Types.ObjectId,

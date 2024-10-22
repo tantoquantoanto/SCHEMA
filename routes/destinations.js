@@ -1,35 +1,44 @@
 const express = require("express");
-const DestinationModel = require("./DestinationModel")
+const DestinationModel = require("../Schemas/DestinationModel")
 const destinations = express.Router();
 
 
 
-destinations.get("./destinations", async (req, res) => {
+destinations.get("./destinations", async (req, res, next) => {
+    const {page, pageSize = 4} = req.query;
+     
+
     try {
-        const destinations = await DestinationModel.find();
+
+        const totalDestinations = await DestinationModel.countDocuments();
+        const totalPages = Math.ceil(totalDestinations/ pageSize)
+        const destinations = await DestinationModel.find().limit(pageSize).skip((page - 1) * pageSize)
         if(destinations.length === 0) {
             res.status(404).send({statusCode: 404, message: "No destinations found"})
         }
 
-        res.status(200).send({statusCode: 200, message: `You found ${destinatiions.length} destinations`, destinations});
+        res.status(200).send({statusCode: 200, message: `You found ${destinatiions.length} destinations`,
+            totalDestinations: totalDestinations;
+            totalPages: totalPages
+            destinations});
 
 
 
 
         
     } catch (error) {
-        res.status(500).send({
-            message: error.message,
-          });
+       next(error)
     }
 
 
 })
 
 
-destinations.get("./destinations/byid/:destinationId", async (req,res) => {
+destinations.get("./destinations/byid/:destinationId", async (req,res, next) => {
   const {destinationId} = req.params;
   try {
+
+
     const destination = await DestinationModel.findById(destinationId)
     if(!destination) {
         res.status(404).send({statusCode: 404, message: "No destination found with the given id"})
@@ -38,13 +47,13 @@ destinations.get("./destinations/byid/:destinationId", async (req,res) => {
 
 
   } catch (error) {
-    res.status(500).send({statusCode:500, message: error.message})
+    next(error)
   }
 
 })
 
 
-destinations.post("/destinations/create", async (req, res) => {
+destinations.post("/destinations/create", async (req, res, next) => {
     try {
         const { name, description, location, category, images } = req.body;
         const newDestination = new DestinationModel({
@@ -62,12 +71,12 @@ destinations.post("/destinations/create", async (req, res) => {
 
     } catch (error) {
         
-        res.status(500).send({ message: "Errore nella creazione della destinazione", error: error.message });
+      next(error)
     }
 });
 
 
-destinations.patch("./destinations/update/:destinationId", async (req,res) => {
+destinations.patch("./destinations/update/:destinationId", async (req,res, next) => {
     const {destinationId} = req.params;
     try {
 
@@ -86,16 +95,13 @@ destinations.patch("./destinations/update/:destinationId", async (req,res) => {
 
         
     } catch (error) {
-        res.status(500).send({
-            statusCode: 500,
-            message: error.message,
-          });
+        next(error)
         
     }
 })
 
 
-destinations.delete(":/destinations/delete/:destinationId", async (req,res) => {
+destinations.delete(":/destinations/delete/:destinationId", async (req,res, next) => {
     const {destinationId} = req.params;
 
     try {
@@ -105,10 +111,7 @@ destinations.delete(":/destinations/delete/:destinationId", async (req,res) => {
 
 
     } catch (error) {
-        res.status(500).send({
-            statusCode: 500,
-            message: error.message,
-          });
+       next(error)
         
     }
 })

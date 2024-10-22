@@ -1,10 +1,10 @@
 const express = require("express");
-const ReviewsModel = require("./ReviewsModel");
+const ReviewsModel = require("../Schemas/ReviewsModel");
 const reviews = express.Router();
 
 
 
-reviews.get("./reviews", async(req,res) => {
+reviews.get("./reviews", async(req,res, next) => {
     try {
         const reviews = await ReviewsModel.find();
         if(reviews.length === 0){
@@ -14,14 +14,11 @@ reviews.get("./reviews", async(req,res) => {
         res.status(200).send({statusCode:200, message:`${reviews.length} reviews found successfully`}, reviews)
         
     } catch (error) {
-        res.status(500).send({
-            message: error.message,
-          });
-        
+        next(error)
     }
 })
 
-reviews.get("./reviews/byId/:reviewId", async(req,res) => {
+reviews.get("./reviews/byId/:reviewId", async(req,res, next) => {
     const {reviewId} = req.params;
     try {
 
@@ -33,12 +30,12 @@ reviews.get("./reviews/byId/:reviewId", async(req,res) => {
         res.status(200).send({statusCode:200, message:"Review found successfully", review})
         
     } catch (error) {
-        res.status(500).send({statusCode:500, message: error.message})
+       next(error)
     }
 })
 
 
-reviews.post("./reviews/create", async(req,res) => {
+reviews.post("./reviews/create", async(req,res, next) => {
 try {
     const {user, destination, rating, comment} = req.body;
 
@@ -54,14 +51,14 @@ try {
     res.status(201).send({statusCode:201, message: "Review created successfully", savedReview})
     
 } catch (error) {
-    res.status(500).send({ message: "Errore nella creazione della recensione", error: error.message });
+    next(error)
 }
 
 
 })
 
 
-reviews.patch("./reviews/update/:reviewId", async(req,res) => {
+reviews.patch("./reviews/update/:reviewId", async(req,res, next) => {
     const{reviewId} = req.params; 
 
     try {
@@ -75,9 +72,27 @@ reviews.patch("./reviews/update/:reviewId", async(req,res) => {
         })
         
     } catch (error) {
-        
+       next(error) 
     }
 })
+
+
+reviews.delete("./reviews/delete/:reviewId", async (req,res, next) => {
+const {reviewId} = req.params;
+try {
+    await ReviewsModel.findByIdAndDelete(reviewId);
+    res.status(200).send({statusCode: 200, message: "Review deleted successfully"}, reviewId)
+
+
+} catch (error) {
+    next(error)
+    
+}
+
+})
+
+
+module.exports = reviews;
 
 //uando invii la richiesta dal frontend per creare una recensione, dovresti inviare un oggetto JSON simile a questo:
 
